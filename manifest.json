@@ -1,0 +1,12 @@
+{
+  "display_name": "Prompt Saver Extension",
+  "loading_order": 1000,
+  "requires": [],
+  "optional": [],
+  "js": "script.js",
+  "css": "style.css",
+  "author": "SillyTavern Community",
+  "version": "1.0.0",
+  "homePage": "https://github.com/SillyTavern/SillyTavern",
+  "description": "Save, organize, and manage completion prompts with advanced features like favoriting, filtering, and comparison tools."
+}
