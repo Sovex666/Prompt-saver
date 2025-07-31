@@ -29,11 +29,42 @@
     font-size: 16px;
 }
 
-/* Save button in prompt manager */
-#prompt-saver-save-button {
+/* Prompt Saver Toolbar */
+.prompt-saver-toolbar {
+    display: flex;
+    gap: 10px;
     margin: 10px 0;
+    padding: 10px;
+    background-color: var(--SmartThemeBodyColor);
+    border: 1px solid var(--SmartThemeBorderColor);
+    border-radius: 5px;
+}
+
+/* Toolbar buttons */
+.prompt-saver-toolbar .menu_button {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 12px;
+    font-size: 14px;
+    white-space: nowrap;
+    transition: all 0.2s ease;
+}
+
+.prompt-saver-toolbar .menu_button:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+/* Specific button styling */
+#prompt-saver-save-button {
     background-color: var(--SmartThemeQuoteColor);
     border-color: var(--SmartThemeQuoteColor);
+}
+
+#prompt-saver-library-button {
+    background-color: var(--SmartThemeEmColor);
+    border-color: var(--SmartThemeEmColor);
 }
 
 /* Prompt library modal styles */
@@ -46,6 +77,21 @@
     margin-bottom: 20px;
     padding-bottom: 15px;
     border-bottom: 1px solid var(--SmartThemeBorderColor);
+}
+
+.prompt-library-filters {
+    display: flex;
+    gap: 10px;
+    margin-top: 10px;
+    flex-wrap: wrap;
+}
+
+.prompt-library-filters .menu_button {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    padding: 6px 10px;
+    font-size: 13px;
 }
 
 .prompt-library-list {
@@ -82,11 +128,15 @@
 .prompt-card-actions {
     display: flex;
     gap: 5px;
+    flex-wrap: wrap;
 }
 
-.prompt-card-actions .btn {
+.prompt-card-actions .menu_button {
     padding: 4px 8px;
     font-size: 12px;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
 }
 
 .prompt-card-content p {

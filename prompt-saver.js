@@ -76,9 +76,10 @@ export class PromptSaverExtension {
      */
     async addNavigationButton() {
         try {
-            const navPanel = document.querySelector('#left-nav-panel');
-            if (!navPanel) {
-                console.warn(`${LOG_PREFIX} Navigation panel not found`);
+            // Look for existing navigation buttons to understand the structure
+            const existingNavButton = document.querySelector('#left-nav-panel .nav_button');
+            if (!existingNavButton) {
+                console.warn(`${LOG_PREFIX} No existing navigation buttons found to copy structure from`);
                 return;
             }
 
@@ -87,21 +88,31 @@ export class PromptSaverExtension {
                 return;
             }
 
+            // Create button using the same structure as existing nav buttons
             const button = document.createElement('div');
             button.id = 'prompt-saver-nav-button';
-            button.className = 'nav-button';
+            button.className = existingNavButton.className; // Copy classes from existing button
+            button.title = 'Open Prompt Library';
             button.innerHTML = `
                 <i class="fa-solid fa-bookmark"></i>
                 <span>Prompt Library</span>
             `;
-            
+
             button.addEventListener('click', () => {
                 this.showPromptLibrary();
             });
 
-            navPanel.appendChild(button);
+            // Insert after the last navigation button
+            const navPanel = document.querySelector('#left-nav-panel');
+            const lastNavButton = navPanel.querySelector('.nav_button:last-of-type');
+            if (lastNavButton) {
+                lastNavButton.parentNode.insertBefore(button, lastNavButton.nextSibling);
+            } else {
+                navPanel.appendChild(button);
+            }
+
             console.log(`${LOG_PREFIX} Navigation button added`);
-            
+
         } catch (error) {
             console.error(`${LOG_PREFIX} Failed to add navigation button:`, error);
         }
@@ -119,7 +130,7 @@ export class PromptSaverExtension {
             }
 
             // Add save button to prompt manager
-            this.addSaveButton(promptManager);
+            this.addSaveButton();
             
             console.log(`${LOG_PREFIX} Integrated with prompt manager`);
             
@@ -131,24 +142,55 @@ export class PromptSaverExtension {
     /**
      * Add save button to prompt manager
      */
-    addSaveButton(promptManager) {
+    addSaveButton() {
         // Check if button already exists
         if (document.querySelector('#prompt-saver-save-button')) {
             return;
         }
 
-        const saveButton = document.createElement('button');
-        saveButton.id = 'prompt-saver-save-button';
-        saveButton.className = 'btn btn-primary';
-        saveButton.innerHTML = '<i class="fa-solid fa-save"></i> Save Current Prompts';
-        
-        saveButton.addEventListener('click', () => {
-            this.saveCurrentPrompts();
-        });
+        // Look for the prompt manager list container
+        const promptList = document.querySelector('#completion_prompt_manager_list');
+        if (!promptList) {
+            console.warn(`${LOG_PREFIX} Prompt manager list not found`);
+            return;
+        }
 
-        // Find a good place to insert the button
-        const header = promptManager.querySelector('.completion_prompt_manager_header') || promptManager;
-        header.appendChild(saveButton);
+        // Create a toolbar container if it doesn't exist
+        let toolbar = document.querySelector('#prompt-saver-toolbar');
+        if (!toolbar) {
+            toolbar = document.createElement('div');
+            toolbar.id = 'prompt-saver-toolbar';
+            toolbar.className = 'prompt-saver-toolbar';
+            toolbar.innerHTML = `
+                <button id="prompt-saver-save-button" title="Save current prompts to library" class="menu_button interactable" tabindex="0">
+                    <i class="fa-solid fa-bookmark"></i> Save Current Prompts
+                </button>
+                <button id="prompt-saver-library-button" title="Open prompt library" class="menu_button interactable" tabindex="0">
+                    <i class="fa-solid fa-book"></i> Open Library
+                </button>
+            `;
+
+            // Insert toolbar before the prompt list
+            promptList.parentElement.insertBefore(toolbar, promptList);
+        }
+
+        // Add event listeners
+        const saveButton = document.querySelector('#prompt-saver-save-button');
+        const libraryButton = document.querySelector('#prompt-saver-library-button');
+
+        if (saveButton) {
+            saveButton.addEventListener('click', () => {
+                this.saveCurrentPrompts();
+            });
+        }
+
+        if (libraryButton) {
+            libraryButton.addEventListener('click', () => {
+                this.showPromptLibrary();
+            });
+        }
+
+        console.log(`${LOG_PREFIX} Prompt manager buttons added`);
     }
 
     /**
@@ -248,22 +290,25 @@ export class PromptSaverExtension {
     showPromptLibrary() {
         try {
             const content = this.generateLibraryHTML();
-            this.currentModal = createModal('Prompt Library', content, {
-                footer: `
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                    <button type="button" class="btn btn-primary" onclick="promptSaver.exportPrompts()">Export</button>
-                `
-            });
-            
-            // Show modal using Bootstrap
-            if (window.bootstrap && window.bootstrap.Modal) {
-                const modal = new window.bootstrap.Modal(this.currentModal);
-                modal.show();
+
+            // Use SillyTavern's popup system if available
+            if (typeof callGenericPopup === 'function') {
+                callGenericPopup(content, 'Prompt Library', '', '', 'prompt-library-popup');
             } else {
-                // Fallback for older versions
-                $(this.currentModal).modal('show');
+                // Fallback to custom modal
+                this.currentModal = createModal('Prompt Library', content, {
+                    footer: `
+                        <button type="button" class="menu_button" onclick="document.querySelector('.modal').style.display='none'">Close</button>
+                        <button type="button" class="menu_button" onclick="window.promptSaver.exportPrompts()">
+                            <i class="fa-solid fa-download"></i> Export
+                        </button>
+                    `
+                });
+
+                // Show modal
+                this.currentModal.style.display = 'block';
             }
-            
+
         } catch (error) {
             console.error(`${LOG_PREFIX} Failed to show prompt library:`, error);
         }
@@ -282,10 +327,17 @@ export class PromptSaverExtension {
         let html = `
             <div class="prompt-library-container">
                 <div class="prompt-library-header">
-                    <input type="text" class="form-control" placeholder="Search prompts..." id="prompt-search">
-                    <div class="btn-group mt-2">
-                        <button class="btn btn-sm btn-outline-primary" onclick="promptSaver.filterFavorites()">Favorites</button>
-                        <button class="btn btn-sm btn-outline-secondary" onclick="promptSaver.clearFilters()">All</button>
+                    <input type="text" class="text_pole" placeholder="Search prompts..." id="prompt-search">
+                    <div class="prompt-library-filters">
+                        <button class="menu_button interactable" title="Show favorites only" onclick="window.promptSaver.filterFavorites()" tabindex="0">
+                            <i class="fa-solid fa-star"></i> Favorites
+                        </button>
+                        <button class="menu_button interactable" title="Show all prompts" onclick="window.promptSaver.clearFilters()" tabindex="0">
+                            <i class="fa-solid fa-list"></i> All
+                        </button>
+                        <button class="menu_button interactable" title="Export prompts" onclick="window.promptSaver.exportPrompts()" tabindex="0">
+                            <i class="fa-solid fa-download"></i> Export
+                        </button>
                     </div>
                 </div>
                 <div class="prompt-library-list" id="prompt-library-list">
@@ -297,17 +349,22 @@ export class PromptSaverExtension {
                     <div class="prompt-card-header">
                         <h6>${sanitizeHtml(prompt.name)}</h6>
                         <div class="prompt-card-actions">
-                            <button class="btn btn-sm btn-outline-warning" onclick="promptSaver.toggleFavorite('${prompt.id}')">
+                            <button class="menu_button interactable" title="Toggle favorite" onclick="window.promptSaver.toggleFavorite('${prompt.id}')" tabindex="0">
                                 <i class="fa-${prompt.metadata.favorite ? 'solid' : 'regular'} fa-star"></i>
                             </button>
-                            <button class="btn btn-sm btn-outline-primary" onclick="promptSaver.applyPrompt('${prompt.id}')">Apply</button>
-                            <button class="btn btn-sm btn-outline-danger" onclick="promptSaver.deletePrompt('${prompt.id}')">Delete</button>
+                            <button class="menu_button interactable" title="Apply prompt" onclick="window.promptSaver.applyPrompt('${prompt.id}')" tabindex="0">
+                                <i class="fa-solid fa-play"></i> Apply
+                            </button>
+                            <button class="menu_button interactable" title="Delete prompt" onclick="window.promptSaver.deletePrompt('${prompt.id}')" tabindex="0">
+                                <i class="fa-solid fa-trash"></i> Delete
+                            </button>
                         </div>
                     </div>
                     <div class="prompt-card-content">
                         <p>${sanitizeHtml(prompt.content.substring(0, 200))}${prompt.content.length > 200 ? '...' : ''}</p>
                         <small class="text-muted">
                             Role: ${prompt.role} | Created: ${formatDate(prompt.metadata.created_at)}
+                            ${prompt.metadata.usage_count ? ` | Used: ${prompt.metadata.usage_count} times` : ''}
                         </small>
                     </div>
                 </div>
