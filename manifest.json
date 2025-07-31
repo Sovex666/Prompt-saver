@@ -3,7 +3,7 @@
   "loading_order": 1000,
   "requires": [],
   "optional": [],
-  "js": "script.js",
+  "js": "index.js",
   "css": "style.css",
   "author": "SillyTavern Community",
   "version": "1.0.0",

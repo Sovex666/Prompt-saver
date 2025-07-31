@@ -1,9 +1,103 @@
 /**
  * Prompt Saver Extension Styles
- * 
+ *
  * This stylesheet provides styling for the Prompt Saver Extension that integrates
  * seamlessly with SillyTavern's existing design system and theme variables.
  */
+
+/* Navigation button styling */
+#prompt-saver-nav-button {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 15px;
+    margin: 5px 0;
+    background-color: var(--SmartThemeBodyColor);
+    border: 1px solid var(--SmartThemeBorderColor);
+    border-radius: 5px;
+    color: var(--SmartThemeEmColor);
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+#prompt-saver-nav-button:hover {
+    background-color: var(--SmartThemeBlurTintColor);
+    transform: translateX(5px);
+}
+
+#prompt-saver-nav-button i {
+    font-size: 16px;
+}
+
+/* Save button in prompt manager */
+#prompt-saver-save-button {
+    margin: 10px 0;
+    background-color: var(--SmartThemeQuoteColor);
+    border-color: var(--SmartThemeQuoteColor);
+}
+
+/* Prompt library modal styles */
+.prompt-library-container {
+    max-height: 70vh;
+    overflow-y: auto;
+}
+
+.prompt-library-header {
+    margin-bottom: 20px;
+    padding-bottom: 15px;
+    border-bottom: 1px solid var(--SmartThemeBorderColor);
+}
+
+.prompt-library-list {
+    display: grid;
+    gap: 15px;
+}
+
+.prompt-card {
+    background-color: var(--SmartThemeBodyColor);
+    border: 1px solid var(--SmartThemeBorderColor);
+    border-radius: 8px;
+    padding: 15px;
+    transition: all 0.2s ease;
+}
+
+.prompt-card:hover {
+    border-color: var(--SmartThemeEmColor);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.prompt-card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 10px;
+}
+
+.prompt-card-header h6 {
+    margin: 0;
+    color: var(--SmartThemeEmColor);
+    font-weight: 600;
+}
+
+.prompt-card-actions {
+    display: flex;
+    gap: 5px;
+}
+
+.prompt-card-actions .btn {
+    padding: 4px 8px;
+    font-size: 12px;
+}
+
+.prompt-card-content p {
+    margin-bottom: 10px;
+    color: var(--SmartThemeBodyColor);
+    line-height: 1.4;
+}
+
+.prompt-card-content small {
+    color: var(--SmartThemeQuoteColor);
+}
 
 /* Toolbar styling */
 .prompt-saver-toolbar {
